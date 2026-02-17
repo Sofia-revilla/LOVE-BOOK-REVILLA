@@ -2,11 +2,13 @@ import { useState, useEffect } from 'react';
 import { createClient } from '@supabase/supabase-js';
 import './index.css';
 
+// Initialize Supabase Client
 const supabase = createClient(
   import.meta.env.VITE_SUPABASE_URL,
   import.meta.env.VITE_SUPABASE_KEY
 );
 
+// Types for stability
 type Mode = 'broken' | 'letter' | 'secret' | null;
 
 interface LoveMessage {
@@ -56,19 +58,15 @@ function App() {
   useEffect(() => {
     const timer = setTimeout(() => setLoading(false), 2000);
 
-    // Fetch existing messages and subscribe to Realtime updates
-    const fetchAndSubscribe = async () => {
-      const { data } = await supabase.from('love_messages').select('*').order('created_at', { ascending: false });
+    const fetchMessages = async () => {
+      const { data } = await supabase
+        .from('love_messages')
+        .select('*')
+        .order('created_at', { ascending: false });
       if (data) setMessages(data as LoveMessage[]);
-
-      supabase
-        .channel('public:love_messages')
-        .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'love_messages' }, 
-          (payload) => setMessages((prev) => [payload.new as LoveMessage, ...prev]))
-        .subscribe();
     };
 
-    fetchAndSubscribe();
+    fetchMessages();
     return () => clearTimeout(timer);
   }, []);
 
@@ -76,13 +74,19 @@ function App() {
     e.preventDefault();
     setIsSending(true);
 
-    const { error } = await supabase.from('love_messages').insert([
-      { type: mode, recipient, content: message }
-    ]);
+    const { error } = await supabase
+      .from('love_messages')
+      .insert([{ type: mode, recipient, content: message }]);
 
-    if (!error) {
+    if (error) {
+      alert("Error syncing: " + error.message);
+    } else {
+      alert("Message recorded! ❤️");
       setRecipient('');
       setMessage('');
+      // Refresh local list
+      const { data } = await supabase.from('love_messages').select('*').order('created_at', { ascending: false });
+      if (data) setMessages(data as LoveMessage[]);
     }
     setIsSending(false);
   };
@@ -90,7 +94,7 @@ function App() {
   if (loading) return (
     <div className="loading-container">
       <div className="loader-heart">💖</div>
-      <h2>Opening {import.meta.env.VITE_APP_NAME || 'LoveBook'}...</h2>
+      <h2>Opening LoveBook...</h2>
     </div>
   );
 
@@ -109,13 +113,13 @@ function App() {
   return (
     <div className="app-main">
       <FallingHearts />
-      <button className="back-btn" onClick={() => setMode(null)}>← Go Back</button>
+      <button className="back-btn" onClick={() => setMode(null)}>← Back</button>
       
       <div className="form-container">
         <h2>{mode === 'broken' ? 'Healing Wall' : mode === 'letter' ? 'Love Letter' : 'Secret Vault'}</h2>
         <form onSubmit={handleSendMessage}>
           <input required placeholder="To:" value={recipient} onChange={(e) => setRecipient(e.target.value)} />
-          <textarea required placeholder="Write your message..." value={message} onChange={(e) => setMessage(e.target.value)} />
+          <textarea required placeholder="Message:" value={message} onChange={(e) => setMessage(e.target.value)} />
           <button type="submit" className="submit-btn" disabled={isSending}>
             {isSending ? 'Syncing...' : 'Send to LoveBook ❤️'}
           </button>
@@ -123,12 +127,10 @@ function App() {
       </div>
 
       <div className="message-wall">
-        <h3>Recent Messages</h3>
         {messages.filter(m => m.type === mode).map(m => (
           <div key={m.id} className="message-card">
             <p><strong>To:</strong> {m.recipient}</p>
             <p>{m.content}</p>
-            <small>{new Date(m.created_at).toLocaleDateString()}</small>
           </div>
         ))}
       </div>
