@@ -2,19 +2,17 @@ import { useState, useEffect } from 'react';
 import { createClient } from '@supabase/supabase-js';
 import './index.css';
 
-// Initialize Supabase
 const supabase = createClient(
   import.meta.env.VITE_SUPABASE_URL,
   import.meta.env.VITE_SUPABASE_KEY
 );
 
-// Types for stability
 type Mode = 'broken' | 'letter' | 'secret' | null;
 
 interface LoveMessage {
   id: number;
   type: string;
-  sender: string;
+  recipient: string;
   content: string;
   created_at: string;
 }
@@ -50,54 +48,92 @@ const FallingHearts = () => {
 function App() {
   const [loading, setLoading] = useState<boolean>(true);
   const [mode, setMode] = useState<Mode>(null);
+  const [recipient, setRecipient] = useState('');
+  const [message, setMessage] = useState('');
   const [messages, setMessages] = useState<LoveMessage[]>([]);
+  const [isSending, setIsSending] = useState(false);
 
   useEffect(() => {
-    // 1. Simulate Loading
     const timer = setTimeout(() => setLoading(false), 2000);
 
-    // 2. Use Supabase (Clears the 'unused' warning)
-    const fetchInitialData = async () => {
-        const { data } = await supabase.from('love_messages').select('*').limit(10);
-        if (data) setMessages(data as LoveMessage[]);
+    // Fetch existing messages and subscribe to Realtime updates
+    const fetchAndSubscribe = async () => {
+      const { data } = await supabase.from('love_messages').select('*').order('created_at', { ascending: false });
+      if (data) setMessages(data as LoveMessage[]);
+
+      supabase
+        .channel('public:love_messages')
+        .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'love_messages' }, 
+          (payload) => setMessages((prev) => [payload.new as LoveMessage, ...prev]))
+        .subscribe();
     };
-    
-    fetchInitialData();
+
+    fetchAndSubscribe();
     return () => clearTimeout(timer);
   }, []);
 
-  if (loading) {
-    return (
-      <div className="loading-container">
-        <div className="loader-heart">💖</div>
-        <h2>Opening LoveBook...</h2>
-      </div>
-    );
-  }
+  const handleSendMessage = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsSending(true);
 
-  if (!mode) {
-    return (
-      <div className="gate">
-        <FallingHearts />
-        <h1>LoveBook 💌</h1>
-        <div className="button-group">
-          <button className="btn-broken" onClick={() => setMode('broken')}>💔 Broken Heart</button>
-          <button className="btn-love" onClick={() => setMode('letter')}>💌 Love Letter</button>
-          <button className="btn-secret" onClick={() => setMode('secret')}>🕵️ Secret Admirer</button>
-        </div>
+    const { error } = await supabase.from('love_messages').insert([
+      { type: mode, recipient, content: message }
+    ]);
+
+    if (!error) {
+      setRecipient('');
+      setMessage('');
+    }
+    setIsSending(false);
+  };
+
+  if (loading) return (
+    <div className="loading-container">
+      <div className="loader-heart">💖</div>
+      <h2>Opening {import.meta.env.VITE_APP_NAME || 'LoveBook'}...</h2>
+    </div>
+  );
+
+  if (!mode) return (
+    <div className="gate">
+      <FallingHearts />
+      <h1 className="title">LoveBook 💌</h1>
+      <div className="button-group">
+        <button className="btn-broken" onClick={() => setMode('broken')}>💔 Broken Heart</button>
+        <button className="btn-love" onClick={() => setMode('letter')}>💌 Love Letter</button>
+        <button className="btn-secret" onClick={() => setMode('secret')}>🕵️ Secret Admirer</button>
       </div>
-    );
-  }
+    </div>
+  );
 
   return (
     <div className="app-main">
       <FallingHearts />
-      <button onClick={() => setMode(null)}>← Back</button>
-      <h2>{mode.toUpperCase()} Vault</h2>
-      <p>Items in vault: {messages.length}</p>
+      <button className="back-btn" onClick={() => setMode(null)}>← Go Back</button>
+      
+      <div className="form-container">
+        <h2>{mode === 'broken' ? 'Healing Wall' : mode === 'letter' ? 'Love Letter' : 'Secret Vault'}</h2>
+        <form onSubmit={handleSendMessage}>
+          <input required placeholder="To:" value={recipient} onChange={(e) => setRecipient(e.target.value)} />
+          <textarea required placeholder="Write your message..." value={message} onChange={(e) => setMessage(e.target.value)} />
+          <button type="submit" className="submit-btn" disabled={isSending}>
+            {isSending ? 'Syncing...' : 'Send to LoveBook ❤️'}
+          </button>
+        </form>
+      </div>
+
+      <div className="message-wall">
+        <h3>Recent Messages</h3>
+        {messages.filter(m => m.type === mode).map(m => (
+          <div key={m.id} className="message-card">
+            <p><strong>To:</strong> {m.recipient}</p>
+            <p>{m.content}</p>
+            <small>{new Date(m.created_at).toLocaleDateString()}</small>
+          </div>
+        ))}
+      </div>
     </div>
   );
 }
 
 export default App;
-// THIS FIXES THE main
