@@ -104,10 +104,11 @@ body {
   50% { transform: translateY(-20px); }
 }
 
-/* --- FIXED BOOKMARKS (NO OVERLAP) --- */
+/* --- FIXED BOOKMARKS (PULL-OUT EFFECT) --- */
 .bookmarks {
   position: absolute;
-  right: -70px; /* Moved further out to avoid overlapping book border */
+  /* Moved to sit exactly on the edge to prevent overlap */
+  right: -58px; 
   top: 50px;
   display: flex;
   flex-direction: column;
@@ -124,7 +125,8 @@ body {
   border: none;
   border-radius: 0 12px 12px 0;
   cursor: pointer;
-  transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  /* Smooth pulling transition */
+  transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275), width 0.3s;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -132,9 +134,10 @@ body {
   font-weight: bold;
 }
 
+/* Pulling hover effect without book overlap */
 .bookmarks button:hover {
-  width: 85px; /* Refined hover expansion */
-  transform: translateX(10px);
+  transform: translateX(15px);
+  width: 75px;
 }
 
 .tab-text { writing-mode: vertical-rl; text-transform: uppercase; font-size: 0.85rem; letter-spacing: 2px; }
@@ -151,22 +154,29 @@ body {
   align-items: center; 
 }
 
-/* New Oval Back Button */
+/* Redesigned Oval Back Button */
 .back-btn {
   background: white;
   border: 2px solid var(--book-brown);
   color: var(--book-brown);
-  padding: 10px 30px;
-  border-radius: 50px; /* Perfect Oval */
+  padding: 10px 35px;
+  border-radius: 50px; /* Oval shape */
   font-weight: 700;
   cursor: pointer;
   transition: all 0.3s ease;
-  margin-bottom: 20px;
+  margin-bottom: 25px;
+  box-shadow: 0 4px 0 var(--book-brown);
 }
 
 .back-btn:hover {
-  background: var(--book-brown);
-  color: white;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 0 var(--book-brown);
+  background: #fdf2f4;
+}
+
+.back-btn:active {
+  transform: translateY(2px);
+  box-shadow: 0 0px 0 var(--book-brown);
 }
 
 .form-wrapper { 
@@ -206,11 +216,11 @@ body {
 .btn-letter { background: var(--love-red) !important; }
 .btn-secret { background: var(--deep-purple) !important; }
 
-/* --- ENVELOPE (FIXED OVERLAP & Z-INDEX) --- */
+/* --- ENVELOPE (STRICT Z-INDEX & NO OVERLAP) --- */
 .envelope-wall { 
   display: grid; 
   grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); 
-  gap: 40px; 
+  gap: 60px; 
   width: 100%; 
 }
 
@@ -221,7 +231,7 @@ body {
   background: #fdf2f4; 
   cursor: pointer; 
   margin-top: 50px; 
-  overflow: visible; /* Needed for pop-out paper */
+  overflow: visible; 
 }
 
 .envelope-paper { 
@@ -233,10 +243,21 @@ body {
   background: white; 
   padding: 15px; 
   transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1); 
-  z-index: 1; /* Paper starts strictly behind the base and flap */
+  z-index: 1; /* Strictly hidden behind base (z=2) and flap (z=3) */
   border: 1px solid #eee; 
   box-sizing: border-box;
-  opacity: 0; /* Hidden while inside */
+  opacity: 0; /* Fully invisible when closed */
+  pointer-events: none;
+}
+
+.envelope-base { 
+  position: absolute; 
+  bottom: 0; 
+  width: 100%; 
+  height: 100%; 
+  background: #f48fb1; 
+  z-index: 2; /* Sits in front of paper */
+  clip-path: polygon(0% 0%, 20% 0%, 50% 45%, 80% 0%, 100% 0%, 100% 100%, 0% 100%); 
 }
 
 .envelope-flap { 
@@ -246,19 +267,9 @@ body {
   border-left: 110px solid transparent; 
   border-right: 110px solid transparent; 
   border-top: 80px solid #f8bbd0; 
-  z-index: 3; /* Flap is on the very top when closed */
+  z-index: 3; /* Top layer when closed */
   transform-origin: top; 
   transition: transform 0.5s ease; 
-}
-
-.envelope-base { 
-  position: absolute; 
-  bottom: 0; 
-  width: 100%; 
-  height: 100%; 
-  background: #f48fb1; 
-  z-index: 2; /* Sits in front of the paper until open */
-  clip-path: polygon(0% 0%, 20% 0%, 50% 45%, 80% 0%, 100% 0%, 100% 100%, 0% 100%); 
 }
 
 .seal { 
@@ -270,17 +281,18 @@ body {
   z-index: 4; 
 }
 
-/* --- FIXED OPENING EFFECT (NO OVERLAP) --- */
+/* --- FIXED OPENING EFFECT --- */
 .envelope.is-open .envelope-flap { 
   transform: rotateX(180deg); 
-  z-index: 0; /* Flaps back behind the paper */
+  z-index: 0; /* Moves behind the paper */
 }
 
 .envelope.is-open .envelope-paper { 
-  transform: translateY(-120px); /* Pops higher */
-  height: 220px; 
-  z-index: 5; /* Paper comes to the absolute front */
-  opacity: 1; /* Becomes visible */
+  transform: translateY(-120px); 
+  height: 240px; 
+  z-index: 5; /* Paper pops to the absolute front */
+  opacity: 1; /* Content revealed */
+  pointer-events: auto;
   box-shadow: 0 20px 40px rgba(0,0,0,0.15); 
 }
 
