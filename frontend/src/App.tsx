@@ -7,6 +7,35 @@ const supabase = createClient(
   import.meta.env.VITE_SUPABASE_KEY
 );
 
+// --- Background Effect Component ---
+const FallingHearts = () => {
+  const [hearts, setHearts] = useState<{ id: number; left: string; duration: string }[]>([]);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      const id = Date.now();
+      const newHeart = {
+        id,
+        left: Math.random() * 100 + 'vw',
+        duration: Math.random() * 3 + 2 + 's',
+      };
+      setHearts((prev) => [...prev, newHeart]);
+      setTimeout(() => setHearts((prev) => prev.filter((h) => h.id !== id)), 5000);
+    }, 600);
+    return () => clearInterval(interval);
+  }, []);
+
+  return (
+    <div className="hearts-layer">
+      {hearts.map((h) => (
+        <span key={h.id} className="heart-drop" style={{ left: h.left, animationDuration: h.duration }}>
+          {Math.random() > 0.5 ? '❤️' : '💖'}
+        </span>
+      ))}
+    </div>
+  );
+};
+
 function App() {
   const [loading, setLoading] = useState(true);
   const [mode, setMode] = useState<'broken' | 'letter' | 'secret' | null>(null);
@@ -78,11 +107,14 @@ function App() {
   );
 
   return (
-    <div className="app-main">
+    <div className="app-main page-bg">
+      <FallingHearts /> {/* Falling hearts are now back in the background */}
+      
       <div className="header-nav">
         <button className="back-btn" onClick={() => setMode(null)}>← Close Book</button>
       </div>
-      <div className="form-wrapper">
+
+      <div className="form-wrapper book-page">
         <h2 className="mode-header">
           {mode === 'broken' ? 'Record the pain' : mode === 'letter' ? 'Write a Letter' : 'Share a Secret'}
         </h2>
@@ -90,11 +122,13 @@ function App() {
           <input placeholder="To" value={recipient} onChange={(e) => setRecipient(e.target.value)} required />
           <input placeholder="From (Optional)" value={sender} onChange={(e) => setSender(e.target.value)} />
           <textarea placeholder="Type your message here..." value={message} onChange={(e) => setMessage(e.target.value)} required />
+          
           <button type="submit" className={`send-btn btn-${mode}`}>
             {mode === 'broken' ? 'Broken' : mode === 'letter' ? 'Love' : 'Secret'} ❤️
           </button>
         </form>
       </div>
+
       <div className="envelope-wall">
         {messages.filter(m => m.type === mode).map(m => (
           <div key={m.id} className={`envelope ${openId === m.id ? 'is-open' : ''}`} onClick={() => setOpenId(openId === m.id ? null : m.id)}>
