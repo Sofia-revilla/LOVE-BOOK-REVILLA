@@ -7,19 +7,17 @@ const supabase = createClient(
   import.meta.env.VITE_SUPABASE_KEY
 );
 
-// Background Component for Falling Hearts
 const FallingHearts = () => {
   const [hearts, setHearts] = useState<{ id: number; left: string; duration: string }[]>([]);
 
   useEffect(() => {
     const interval = setInterval(() => {
       const id = Date.now();
-      const newHeart = {
+      setHearts((prev) => [...prev, {
         id,
         left: Math.random() * 100 + 'vw',
         duration: Math.random() * 3 + 2 + 's',
-      };
-      setHearts((prev) => [...prev, newHeart]);
+      }]);
       setTimeout(() => setHearts((prev) => prev.filter((h) => h.id !== id)), 5000);
     }, 600);
     return () => clearInterval(interval);
@@ -88,8 +86,11 @@ function App() {
       <div className={`book-cover ${flipping ? 'is-flipping' : ''}`}>
         <div className="book-content">
           <h1 className="book-title">LoveBook 💌</h1>
-          <p className="book-subtitle">Record your journey...</p>
+          <p className="book-subtitle">INPUT YOUR HEARTFELT MESSAGE...</p>
           <div className="pixel-art-heart">💖</div>
+          <div className="signature-credit">
+            cc: <a href="https://github.com/Sofia-revilla" target="_blank" rel="noopener noreferrer">Sofia-Revilla-SF241</a>
+          </div>
         </div>
         <div className="bookmarks">
           <button className="tab-broken" onClick={() => handleModeChange('broken')}>
@@ -125,6 +126,11 @@ function App() {
           </button>
         </form>
       </div>
+      
+      <div className="page-footer-credit">
+        cc: <a href="https://github.com/Sofia-revilla" target="_blank" rel="noopener noreferrer">Sofia-Revilla-SF241</a>
+      </div>
+
       <div className="envelope-wall">
         {messages.filter(m => m.type === mode).map(m => (
           <div key={m.id} className={`envelope ${openId === m.id ? 'is-open' : ''}`} onClick={() => setOpenId(openId === m.id ? null : m.id)}>
