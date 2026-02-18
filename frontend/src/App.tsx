@@ -7,6 +7,35 @@ const supabase = createClient(
   import.meta.env.VITE_SUPABASE_KEY
 );
 
+// Background Component for Falling Hearts
+const FallingHearts = () => {
+  const [hearts, setHearts] = useState<{ id: number; left: string; duration: string }[]>([]);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      const id = Date.now();
+      const newHeart = {
+        id,
+        left: Math.random() * 100 + 'vw',
+        duration: Math.random() * 3 + 2 + 's',
+      };
+      setHearts((prev) => [...prev, newHeart]);
+      setTimeout(() => setHearts((prev) => prev.filter((h) => h.id !== id)), 5000);
+    }, 600);
+    return () => clearInterval(interval);
+  }, []);
+
+  return (
+    <div className="hearts-layer">
+      {hearts.map((h) => (
+        <span key={h.id} className="heart-drop" style={{ left: h.left, animationDuration: h.duration }}>
+          {Math.random() > 0.5 ? '❤️' : '💖'}
+        </span>
+      ))}
+    </div>
+  );
+};
+
 function App() {
   const [loading, setLoading] = useState(true);
   const [mode, setMode] = useState<'broken' | 'letter' | 'secret' | null>(null);
@@ -79,9 +108,10 @@ function App() {
 
   return (
     <div className="app-main">
-<div className="header-nav">
-  <button className="back-btn" onClick={() => setMode(null)}>← Close Book</button>
-</div>
+      <FallingHearts />
+      <div className="header-nav">
+        <button className="back-btn" onClick={() => setMode(null)}>← Close Book</button>
+      </div>
       <div className="form-wrapper">
         <h2 className="mode-header">
           {mode === 'broken' ? 'Record the pain' : mode === 'letter' ? 'Write a Letter' : 'Share a Secret'}
