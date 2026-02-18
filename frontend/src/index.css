@@ -37,7 +37,7 @@ body {
   to { transform: translateY(110vh) rotate(360deg); }
 }
 
-/* --- LOADING SCREEN --- */
+/* --- LOADING --- */
 .loading-overlay {
   height: 100vh;
   display: flex;
@@ -74,15 +74,13 @@ body {
   background: #fff9f0;
   border: 10px solid var(--book-brown);
   border-radius: 10px 40px 40px 10px;
-  /* Shadow sits at the very bottom */
-  box-shadow: 25px 25px 0px rgba(109, 76, 65, 0.2); 
+  box-shadow: 25px 25px 0px rgba(109, 76, 65, 0.2);
   padding: 40px;
   text-align: center;
   transform-style: preserve-3d;
   transition: transform 0.6s cubic-bezier(0.645, 0.045, 0.355, 1);
   transform-origin: left center;
-  /* High z-index to stay on top of the pull-out bookmarks */
-  z-index: 10; 
+  z-index: 5; /* Puts the cover on top of the bookmarks */
 }
 
 .book-cover.is-flipping {
@@ -107,43 +105,53 @@ body {
   50% { transform: translateY(-20px); }
 }
 
-/* --- FIXED BOOKMARKS (PINNED BEHIND THE BOOK) --- */
+/* --- REVISED: BOOKMARKS INSIDE THE BOOK --- */
 .bookmarks {
   position: absolute;
-  /* Pinned behind the right edge of the book cover */
-  right: -45px; 
+  /* Moved INWARD to sit under the edge of the book cover */
+  right: 5px; 
   top: 60px;
   display: flex;
   flex-direction: column;
-  gap: 15px;
-  /* z-index is lower than book-cover (10) but higher than shadow */
-  z-index: 5; 
+  gap: 12px;
   transition: opacity 0.3s;
+  z-index: 1; /* Sits behind the book cover */
 }
 
 .is-flipping .bookmarks { opacity: 0; }
 
 .bookmarks button {
-  width: 60px;
-  height: 90px;
+  width: 75px; /* Wider to peek out from the side */
+  height: 50px; /* Shorter, like real sticky tabs */
   border: none;
-  border-radius: 0 12px 12px 0;
+  /* Rounded only on the outer peeking edge */
+  border-radius: 5px 0 0 5px; 
   cursor: pointer;
-  /* Smooth pulling animation pulling out from UNDER the book edge */
+  /* Smooth "Pull" transition */
   transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
   display: flex;
   align-items: center;
-  justify-content: center;
+  justify-content: flex-start;
+  padding-left: 10px;
   color: white;
   font-weight: bold;
+  /* Initial position: mostly hidden behind the page edge */
+  transform: translateX(45px); 
+  box-shadow: -2px 2px 5px rgba(0,0,0,0.1);
 }
 
 .bookmarks button:hover {
-  /* Pulls out to the right without overlapping the book cover border */
-  transform: translateX(35px); 
+  /* Pulls out to reveal the label */
+  transform: translateX(10px);
 }
 
-.tab-text { writing-mode: vertical-rl; text-transform: uppercase; font-size: 0.85rem; letter-spacing: 2px; }
+/* Changed to Horizontal text for that sticky-tab look */
+.tab-text { 
+  font-size: 0.75rem; 
+  text-transform: capitalize;
+  letter-spacing: 0.5px;
+}
+
 .tab-broken { background: var(--broken-black); }
 .tab-love { background: var(--love-red); }
 .tab-secret { background: var(--deep-purple); }
@@ -157,17 +165,16 @@ body {
   align-items: center; 
 }
 
-/* Perfect Oval Back Button */
 .back-btn {
   background: white;
   border: 2px solid var(--book-brown);
   color: var(--book-brown);
-  padding: 12px 35px;
-  border-radius: 50px; 
+  padding: 10px 35px;
+  border-radius: 50px; /* Perfect Oval */
   font-weight: 700;
   cursor: pointer;
   transition: all 0.3s ease;
-  margin-bottom: 25px;
+  margin-bottom: 20px;
 }
 
 .back-btn:hover {
@@ -180,7 +187,7 @@ body {
   width: 100%; 
   padding: 50px; 
   border-radius: 5px 25px 25px 5px; 
-  box-shadow: 0 10px 30px rgba(0,0,0,0.05); 
+  box-shadow: 0 10px 30px rgba(0,0,0,0.1); 
   border-left: 15px solid #eae0d5; 
   box-sizing: border-box;
 }
@@ -205,9 +212,14 @@ body {
   color: white !important; 
   font-weight: bold; 
   cursor: pointer; 
+  text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
 }
 
-/* --- ENVELOPE (STRICT Z-INDEX LAYERING) --- */
+.btn-broken { background: var(--broken-black) !important; }
+.btn-letter { background: var(--love-red) !important; }
+.btn-secret { background: var(--deep-purple) !important; }
+
+/* --- ENVELOPE (PAPER INSIDE EFFECT) --- */
 .envelope-wall { 
   display: grid; 
   grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); 
@@ -234,23 +246,10 @@ body {
   background: white; 
   padding: 15px; 
   transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1); 
-  /* z-index 1 is strictly behind the base (2) and flap (3) */
-  z-index: 1; 
+  z-index: 1; /* Paper starts strictly behind the base and flap */
   border: 1px solid #eee; 
   box-sizing: border-box;
   opacity: 0; 
-  pointer-events: none;
-}
-
-.envelope-base { 
-  position: absolute; 
-  bottom: 0; 
-  width: 100%; 
-  height: 100%; 
-  background: #f48fb1; 
-  /* Base physically covers the paper content */
-  z-index: 2; 
-  clip-path: polygon(0% 0%, 20% 0%, 50% 45%, 80% 0%, 100% 0%, 100% 100%, 0% 100%); 
 }
 
 .envelope-flap { 
@@ -259,11 +258,20 @@ body {
   width: 0; height: 0; 
   border-left: 110px solid transparent; 
   border-right: 110px solid transparent; 
-  border-top: 85px solid #f8bbd0; 
-  /* Flap sits on the very top of the stack when closed */
+  border-top: 80px solid #f8bbd0; 
   z-index: 3; 
   transform-origin: top; 
   transition: transform 0.5s ease; 
+}
+
+.envelope-base { 
+  position: absolute; 
+  bottom: 0; 
+  width: 100%; 
+  height: 100%; 
+  background: #f48fb1; 
+  z-index: 2; /* Cover is in front of the paper */
+  clip-path: polygon(0% 0%, 20% 0%, 50% 45%, 80% 0%, 100% 0%, 100% 100%, 0% 100%); 
 }
 
 .seal { 
@@ -275,23 +283,19 @@ body {
   z-index: 4; 
 }
 
-/* --- FIXED OPENING EFFECT (PAPER POPS TO FRONT) --- */
+/* --- OPENING EFFECT (NO OVERLAP) --- */
 .envelope.is-open .envelope-flap { 
   transform: rotateX(180deg); 
-  z-index: 0; /* Flaps back behind the paper when open */
+  z-index: 0; 
 }
 
 .envelope.is-open .envelope-paper { 
   transform: translateY(-120px); 
-  height: 240px; 
-  /* Paper jumps to the front of the base and flap */
-  z-index: 5; 
+  height: 220px; 
+  z-index: 5; /* Paper pops to the front */
   opacity: 1; 
-  pointer-events: auto;
   box-shadow: 0 20px 40px rgba(0,0,0,0.15); 
 }
-
-
 
 .postage-stamp { 
   position: absolute; 
