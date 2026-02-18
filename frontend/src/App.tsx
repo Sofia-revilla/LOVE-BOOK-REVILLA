@@ -79,9 +79,9 @@ function App() {
 
   return (
     <div className="app-main">
-      <div className="header-nav">
-        <button className="back-btn" onClick={() => setMode(null)}>← Close Book</button>
-      </div>
+<div className="header-nav">
+  <button className="back-btn" onClick={() => setMode(null)}>← Close Book</button>
+</div>
       <div className="form-wrapper">
         <h2 className="mode-header">
           {mode === 'broken' ? 'Record the pain' : mode === 'letter' ? 'Write a Letter' : 'Share a Secret'}

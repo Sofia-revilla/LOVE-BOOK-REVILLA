@@ -4,7 +4,7 @@
   --soft-pink: #fce4ec;
   --love-red: #ff4d6d;
   --deep-purple: #7209b7;
-  --broken-black: #1a1a1a; /* Fixed: High visibility black for Broken Heart */
+  --broken-black: #1a1a1a;
   --paper-white: #ffffff;
   --book-brown: #6d4c41;
   --page-cream: #fffdfa;
@@ -20,12 +20,10 @@ body {
 /* --- FALLING HEARTS BACKGROUND --- */
 .hearts-layer {
   position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
   pointer-events: none;
-  z-index: -1; /* Stays behind all content */
+  z-index: -1;
 }
 
 .heart-drop {
@@ -106,15 +104,16 @@ body {
   50% { transform: translateY(-20px); }
 }
 
-/* --- BOOKMARKS --- */
+/* --- FIXED BOOKMARKS (NO OVERLAP) --- */
 .bookmarks {
   position: absolute;
-  right: -60px;
+  right: -70px; /* Moved further out to avoid overlapping book border */
   top: 50px;
   display: flex;
   flex-direction: column;
   gap: 15px;
   transition: opacity 0.3s;
+  z-index: 10;
 }
 
 .is-flipping .bookmarks { opacity: 0; }
@@ -134,8 +133,8 @@ body {
 }
 
 .bookmarks button:hover {
-  width: 90px;
-  transform: translateX(5px);
+  width: 85px; /* Refined hover expansion */
+  transform: translateX(10px);
 }
 
 .tab-text { writing-mode: vertical-rl; text-transform: uppercase; font-size: 0.85rem; letter-spacing: 2px; }
@@ -143,7 +142,7 @@ body {
 .tab-love { background: var(--love-red); }
 .tab-secret { background: var(--deep-purple); }
 
-/* --- WRITING INTERFACE (BOOK PAGE STYLE) --- */
+/* --- WRITING INTERFACE & OVAL BACK BUTTON --- */
 .app-main { 
   max-width: 750px; 
   margin: 40px auto; 
@@ -152,13 +151,31 @@ body {
   align-items: center; 
 }
 
+/* New Oval Back Button */
+.back-btn {
+  background: white;
+  border: 2px solid var(--book-brown);
+  color: var(--book-brown);
+  padding: 10px 30px;
+  border-radius: 50px; /* Perfect Oval */
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  margin-bottom: 20px;
+}
+
+.back-btn:hover {
+  background: var(--book-brown);
+  color: white;
+}
+
 .form-wrapper { 
   background: var(--page-cream); 
   width: 100%; 
   padding: 50px; 
   border-radius: 5px 25px 25px 5px; 
   box-shadow: 0 10px 30px rgba(0,0,0,0.1); 
-  border-left: 15px solid #eae0d5; /* Page Binding Effect */
+  border-left: 15px solid #eae0d5; 
   box-sizing: border-box;
 }
 
@@ -173,14 +190,13 @@ body {
   font-size: 1.1rem; 
 }
 
-/* --- VISIBLE BUTTON COLORS --- */
 .send-btn { 
   display: block; 
   margin: 20px auto 0; 
   padding: 15px 50px; 
   border-radius: 50px; 
   border: none; 
-  color: white !important; /* Fixed: Force white text for contrast */
+  color: white !important; 
   font-weight: bold; 
   cursor: pointer; 
   text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
@@ -190,7 +206,7 @@ body {
 .btn-letter { background: var(--love-red) !important; }
 .btn-secret { background: var(--deep-purple) !important; }
 
-/* --- ENVELOPE (PAPER INSIDE EFFECT) --- */
+/* --- ENVELOPE (FIXED OVERLAP & Z-INDEX) --- */
 .envelope-wall { 
   display: grid; 
   grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); 
@@ -204,22 +220,23 @@ body {
   height: 150px; 
   background: #fdf2f4; 
   cursor: pointer; 
-  transition: transform 0.4s ease; 
   margin-top: 50px; 
+  overflow: visible; /* Needed for pop-out paper */
 }
 
 .envelope-paper { 
   position: absolute; 
-  bottom: 5px; /* Tucked inside the base */
+  bottom: 5px; 
   left: 5%; 
   width: 90%; 
-  height: 85%; /* Shorter when closed */
+  height: 80%; 
   background: white; 
   padding: 15px; 
-  transition: all 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275); 
-  z-index: 1; /* Behind base and flap */
+  transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1); 
+  z-index: 1; /* Paper starts strictly behind the base and flap */
   border: 1px solid #eee; 
   box-sizing: border-box;
+  opacity: 0; /* Hidden while inside */
 }
 
 .envelope-flap { 
@@ -229,7 +246,7 @@ body {
   border-left: 110px solid transparent; 
   border-right: 110px solid transparent; 
   border-top: 80px solid #f8bbd0; 
-  z-index: 3; /* Top layer when closed */
+  z-index: 3; /* Flap is on the very top when closed */
   transform-origin: top; 
   transition: transform 0.5s ease; 
 }
@@ -240,7 +257,7 @@ body {
   width: 100%; 
   height: 100%; 
   background: #f48fb1; 
-  z-index: 2; /* In front of the paper */
+  z-index: 2; /* Sits in front of the paper until open */
   clip-path: polygon(0% 0%, 20% 0%, 50% 45%, 80% 0%, 100% 0%, 100% 100%, 0% 100%); 
 }
 
@@ -253,16 +270,17 @@ body {
   z-index: 4; 
 }
 
-/* --- OPENING EFFECT (ENHANCED Z-INDEX) --- */
+/* --- FIXED OPENING EFFECT (NO OVERLAP) --- */
 .envelope.is-open .envelope-flap { 
   transform: rotateX(180deg); 
   z-index: 0; /* Flaps back behind the paper */
 }
 
 .envelope.is-open .envelope-paper { 
-  transform: translateY(-110px); /* Pop out and up */
+  transform: translateY(-120px); /* Pops higher */
   height: 220px; 
-  z-index: 5; /* Paper comes to the very front */
+  z-index: 5; /* Paper comes to the absolute front */
+  opacity: 1; /* Becomes visible */
   box-shadow: 0 20px 40px rgba(0,0,0,0.15); 
 }
 
