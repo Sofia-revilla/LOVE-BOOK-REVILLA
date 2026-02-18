@@ -8,6 +8,7 @@ const supabase = createClient(
 );
 
 function App() {
+  const [loading, setLoading] = useState(true);
   const [mode, setMode] = useState<'broken' | 'letter' | 'secret' | null>(null);
   const [recipient, setRecipient] = useState('');
   const [sender, setSender] = useState('');
@@ -16,35 +17,42 @@ function App() {
   const [openId, setOpenId] = useState<number | null>(null);
 
   useEffect(() => {
+    // Pumping Heart Loading Timer
+    const timer = setTimeout(() => setLoading(false), 2500);
+    
     const fetchMessages = async () => {
       const { data } = await supabase.from('love_messages').select('*').order('created_at', { ascending: false });
       if (data) setMessages(data);
     };
     fetchMessages();
+    return () => clearTimeout(timer);
   }, []);
 
   const handleSendMessage = async (e: React.FormEvent) => {
     e.preventDefault();
     const { error } = await supabase.from('love_messages').insert([
-      { 
-        type: mode, 
-        recipient, 
-        sender: sender || 'Anonymous', 
-        content: message 
-      }
+      { type: mode, recipient, sender: sender || 'Anonymous', content: message }
     ]);
     if (!error) {
       setRecipient(''); setSender(''); setMessage('');
-      // Refresh local list
       const { data } = await supabase.from('love_messages').select('*').order('created_at', { ascending: false });
       if (data) setMessages(data);
     }
   };
 
+  // 1. LOADING SCREEN: Pumping Heart
+  if (loading) return (
+    <div className="loading-overlay">
+      <div className="pumping-heart">❤️</div>
+      <p>Opening LoveBook...</p>
+    </div>
+  );
+
+  // 2. GATEWAY SCREEN
   if (!mode) return (
     <div className="gate">
-      <h1>LoveBook 💌</h1>
-      <div className="button-group">
+      <h1 className="main-title">LoveBook 💌</h1>
+      <div className="button-grid">
         <button className="btn-broken" onClick={() => setMode('broken')}>💔 Broken Heart</button>
         <button className="btn-love" onClick={() => setMode('letter')}>💌 Love Letter</button>
         <button className="btn-secret" onClick={() => setMode('secret')}>🕵️ Secret Admirer</button>
@@ -52,38 +60,43 @@ function App() {
     </div>
   );
 
+  // 3. MAIN INTERFACE
   return (
     <div className="app-main">
-      <button className="back-btn" onClick={() => setMode(null)}>← Back</button>
-      
-      <form onSubmit={handleSendMessage} className="form-container">
-        <h3>{mode === 'broken' ? 'Release the pain' : 'Record the Love'}</h3>
-        <input placeholder="To:" value={recipient} onChange={(e) => setRecipient(e.target.value)} required />
-        <input placeholder="From (Optional):" value={sender} onChange={(e) => setSender(e.target.value)} />
-        <textarea placeholder="Message:" value={message} onChange={(e) => setMessage(e.target.value)} required />
-        <button type="submit" className="submit-btn">Send to Vault</button>
-      </form>
+      <div className="header-nav">
+        <button className="back-btn" onClick={() => setMode(null)}>← Back</button>
+        <h2 className="mode-label">{mode === 'broken' ? '💔 Broken' : mode === 'letter' ? '❤️ Love' : '🕵️ Secret'}</h2>
+      </div>
 
-      <div className="wall">
+      <div className="form-wrapper">
+        <form onSubmit={handleSendMessage} className="love-form">
+          <div className="input-row">
+            <input placeholder="To:" value={recipient} onChange={(e) => setRecipient(e.target.value)} required />
+            <input placeholder="From (Optional):" value={sender} onChange={(e) => setSender(e.target.value)} />
+          </div>
+          <textarea placeholder="Record your message..." value={message} onChange={(e) => setMessage(e.target.value)} required />
+          <button type="submit" className="send-btn">Send to Vault</button>
+        </form>
+      </div>
+
+      <div className="envelope-wall">
         {messages.filter(m => m.type === mode).map(m => (
           <div 
             key={m.id} 
-            className={`shape-card ${mode} ${openId === m.id ? 'is-open' : ''}`}
+            className={`envelope ${openId === m.id ? 'is-open' : ''}`}
             onClick={() => setOpenId(openId === m.id ? null : m.id)}
           >
-            <div className="shape-wrapper">
-              <span className="main-emoji">
-                {mode === 'broken' ? '💔' : mode === 'letter' ? '❤️' : '✉️'}
-              </span>
-              <div className="preview-info">
-                <p>To: {m.recipient}</p>
-                {openId === m.id && (
-                  <div className="revealed-content">
-                    <p><strong>From:</strong> {m.sender}</p>
-                    <p className="msg-body">"{m.content}"</p>
-                  </div>
-                )}
+            <div className="envelope-flap"></div>
+            <div className="envelope-paper">
+              <div className="letter-content">
+                <p><strong>To:</strong> {m.recipient}</p>
+                <p><strong>From:</strong> {m.sender}</p>
+                <hr />
+                <p className="msg-text">{m.content}</p>
               </div>
+            </div>
+            <div className="envelope-base">
+               <span className="seal">{mode === 'broken' ? '💔' : '❤️'}</span>
             </div>
           </div>
         ))}
