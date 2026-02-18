@@ -86,7 +86,8 @@ function App() {
       <div className={`book-cover ${flipping ? 'is-flipping' : ''}`}>
         <div className="book-content">
           <h1 className="book-title">LoveBook 💌</h1>
-          <p className="book-subtitle">INPUT YOUR HEARTFELT MESSAGE...</p>
+          <p className="book-subtitle">WRITE YOUR HEARTFELT MESSAGE...</p>
+          <p className="book-subtitle"><i>choose a bookmark!</i></p>
           <div className="pixel-art-heart">💖</div>
           <div className="signature-credit">
             ©<a href="https://github.com/Sofia-revilla" target="_blank" rel="noopener noreferrer">Sofia-Revilla-SF241</a>
