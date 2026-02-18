@@ -89,7 +89,7 @@ function App() {
           <p className="book-subtitle">INPUT YOUR HEARTFELT MESSAGE...</p>
           <div className="pixel-art-heart">💖</div>
           <div className="signature-credit">
-            cc: <a href="https://github.com/Sofia-revilla" target="_blank" rel="noopener noreferrer">Sofia-Revilla-SF241</a>
+            ©<a href="https://github.com/Sofia-revilla" target="_blank" rel="noopener noreferrer">Sofia-Revilla-SF241</a>
           </div>
         </div>
         <div className="bookmarks">
@@ -128,7 +128,7 @@ function App() {
       </div>
       
       <div className="page-footer-credit">
-        cc: <a href="https://github.com/Sofia-revilla" target="_blank" rel="noopener noreferrer">Sofia-Revilla-SF241</a>
+        © <a href="https://github.com/Sofia-revilla" target="_blank" rel="noopener noreferrer">Sofia-Revilla-SF241</a>
       </div>
 
       <div className="envelope-wall">
