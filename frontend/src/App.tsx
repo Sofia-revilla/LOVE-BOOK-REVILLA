@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { createClient } from '@supabase/supabase-js';
 import './index.css';
 
+// Initialize Supabase
 const supabase = createClient(
   import.meta.env.VITE_SUPABASE_URL,
   import.meta.env.VITE_SUPABASE_KEY
@@ -31,10 +32,19 @@ function App() {
   const handleSendMessage = async (e: React.FormEvent) => {
     e.preventDefault();
     const { error } = await supabase.from('love_messages').insert([
-      { type: mode, recipient, sender: sender || 'Anonymous', content: message }
+      { 
+        type: mode, 
+        recipient, 
+        sender: sender || 'Anonymous', 
+        content: message 
+      }
     ]);
+
     if (!error) {
-      setRecipient(''); setSender(''); setMessage('');
+      setRecipient(''); 
+      setSender(''); 
+      setMessage('');
+      // Refresh messages after sync
       const { data } = await supabase.from('love_messages').select('*').order('created_at', { ascending: false });
       if (data) setMessages(data);
     }
@@ -60,22 +70,41 @@ function App() {
     </div>
   );
 
-  // 3. MAIN INTERFACE
+  // 3. MAIN INTERFACE: Clean Writing Format
   return (
     <div className="app-main">
       <div className="header-nav">
         <button className="back-btn" onClick={() => setMode(null)}>← Back</button>
-        <h2 className="mode-label">{mode === 'broken' ? '💔 Broken' : mode === 'letter' ? '❤️ Love' : '🕵️ Secret'}</h2>
       </div>
 
       <div className="form-wrapper">
+        <h2 className="mode-header">
+          {mode === 'broken' ? 'Record the pain' : 
+           mode === 'letter' ? 'Write a Letter' : 'Share a Secret'}
+        </h2>
+        
         <form onSubmit={handleSendMessage} className="love-form">
-          <div className="input-row">
-            <input placeholder="To:" value={recipient} onChange={(e) => setRecipient(e.target.value)} required />
-            <input placeholder="From (Optional):" value={sender} onChange={(e) => setSender(e.target.value)} />
-          </div>
-          <textarea placeholder="Record your message..." value={message} onChange={(e) => setMessage(e.target.value)} required />
-          <button type="submit" className="send-btn">Send to Vault</button>
+          <input 
+            placeholder="To" 
+            value={recipient} 
+            onChange={(e) => setRecipient(e.target.value)} 
+            required 
+          />
+          <input 
+            placeholder="From (Optional)" 
+            value={sender} 
+            onChange={(e) => setSender(e.target.value)} 
+          />
+          <textarea 
+            placeholder="Type your message here..." 
+            value={message} 
+            onChange={(e) => setMessage(e.target.value)} 
+            required 
+          />
+          
+          <button type="submit" className={`send-btn btn-${mode}`}>
+            {mode === 'broken' ? 'Broken' : mode === 'letter' ? 'Love' : 'Secret'} ❤️
+          </button>
         </form>
       </div>
 
@@ -96,6 +125,13 @@ function App() {
               </div>
             </div>
             <div className="envelope-base">
+               {/* Postage Stamp UI */}
+               <div className="postage-stamp">
+                 <span className="stamp-emoji">
+                   {m.type === 'broken' ? '🥀' : m.type === 'letter' ? '💖' : '🕵️'}
+                 </span>
+                 <div className="stamp-dots"></div>
+               </div>
                <span className="seal">{mode === 'broken' ? '💔' : '❤️'}</span>
             </div>
           </div>

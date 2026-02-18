@@ -4,6 +4,8 @@
   --soft-pink: #fce4ec;
   --love-red: #ff4d6d;
   --deep-purple: #7209b7;
+  --broken-gray: #4a4e69;
+  --paper-white: #ffffff;
 }
 
 body {
@@ -12,7 +14,7 @@ body {
   margin: 0;
 }
 
-/* --- LOADING ANIMATION --- */
+/* --- LOADING ANIMATION (PRESERVED) --- */
 .loading-overlay {
   height: 100vh;
   display: flex;
@@ -35,12 +37,93 @@ body {
   60% { transform: scale(1); }
 }
 
-/* --- ENVELOPE DESIGN --- */
+/* --- MODERN WRITING INTERFACE --- */
+.app-main {
+  max-width: 600px;
+  margin: 40px auto;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.form-wrapper {
+  background: var(--paper-white);
+  width: 100%;
+  padding: 40px;
+  border-radius: 25px;
+  box-shadow: 0 15px 35px rgba(255, 77, 109, 0.15);
+  border: 1px solid rgba(255, 182, 193, 0.4);
+  box-sizing: border-box;
+}
+
+.mode-header {
+  font-size: 1.8rem;
+  font-weight: 700;
+  margin-bottom: 30px;
+  color: #333;
+  text-align: center;
+}
+
+/* Clean Writing Inputs */
+.love-form input, 
+.love-form textarea {
+  width: 100%;
+  background: transparent;
+  border: none;
+  border-bottom: 2px solid #f1f1f1;
+  padding: 15px 0;
+  margin-bottom: 25px;
+  font-family: inherit;
+  font-size: 1.1rem;
+  transition: border-color 0.3s ease;
+  box-sizing: border-box;
+}
+
+.love-form input:focus, 
+.love-form textarea:focus {
+  outline: none;
+  border-bottom-color: var(--love-red);
+}
+
+.love-form textarea {
+  min-height: 150px;
+  resize: none;
+  line-height: 1.8;
+}
+
+/* Mode-Based Send Buttons (Center Aligned) */
+.send-btn {
+  display: block;
+  margin: 0 auto;
+  padding: 15px 50px;
+  border-radius: 50px;
+  border: none;
+  color: white;
+  font-weight: bold;
+  font-size: 1.2rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+}
+
+.send-btn:hover {
+  transform: translateY(-3px);
+  filter: brightness(1.1);
+}
+
+/* Dynamic Colors */
+.btn-broken { background: var(--broken-gray); }
+.btn-letter { background: var(--love-red); }
+.btn-secret { background: var(--deep-purple); }
+
+/* --- ENVELOPE DESIGN (PRESERVED) --- */
 .envelope-wall {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
   gap: 40px;
   padding: 40px;
+  width: 100%;
 }
 
 .envelope {
@@ -96,17 +179,9 @@ body {
   font-size: 1.5rem;
 }
 
-/* --- OPENING EFFECT --- */
+/* --- OPENING EFFECT (PRESERVED) --- */
 .envelope.is-open { transform: translateY(40px); }
 .envelope.is-open .envelope-flap { transform: rotateX(180deg); }
 .envelope.is-open .envelope-paper { transform: translateY(-80px); height: 180px; z-index: 4; }
 
 .letter-content { font-size: 0.8rem; color: #333; overflow-y: auto; height: 100%; }
-
-/* --- BUTTONS & FORM --- */
-.send-btn {
-  background: var(--love-red);
-  color: white; border: none;
-  padding: 10px 20px; border-radius: 20px;
-  cursor: pointer; width: 100%; font-weight: bold;
-}
