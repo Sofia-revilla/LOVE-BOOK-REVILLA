@@ -4,7 +4,7 @@
   --soft-pink: #fce4ec;
   --love-red: #ff4d6d;
   --deep-purple: #7209b7;
-  --broken-black: #1a1a1a; /* Fixed: High visibility black for Broken Heart */
+  --broken-black: #1a1a1a;
   --paper-white: #ffffff;
   --book-brown: #6d4c41;
   --page-cream: #fffdfa;
@@ -20,12 +20,10 @@ body {
 /* --- FALLING HEARTS BACKGROUND --- */
 .hearts-layer {
   position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
   pointer-events: none;
-  z-index: -1; /* Stays behind all content */
+  z-index: -1;
 }
 
 .heart-drop {
@@ -82,6 +80,7 @@ body {
   transform-style: preserve-3d;
   transition: transform 0.6s cubic-bezier(0.645, 0.045, 0.355, 1);
   transform-origin: left center;
+  box-sizing: border-box;
 }
 
 .book-cover.is-flipping {
@@ -106,15 +105,16 @@ body {
   50% { transform: translateY(-20px); }
 }
 
-/* --- BOOKMARKS --- */
+/* --- FIXED BOOKMARKS (NO OVERLAP) --- */
 .bookmarks {
   position: absolute;
-  right: -60px;
+  right: -70px; /* Moved further out to prevent overlapping the book border */
   top: 50px;
   display: flex;
   flex-direction: column;
   gap: 15px;
   transition: opacity 0.3s;
+  z-index: 10;
 }
 
 .is-flipping .bookmarks { opacity: 0; }
@@ -131,11 +131,12 @@ body {
   justify-content: center;
   color: white;
   font-weight: bold;
+  box-shadow: 4px 4px 10px rgba(0,0,0,0.1);
 }
 
 .bookmarks button:hover {
-  width: 90px;
-  transform: translateX(5px);
+  width: 85px;
+  transform: translateX(10px);
 }
 
 .tab-text { writing-mode: vertical-rl; text-transform: uppercase; font-size: 0.85rem; letter-spacing: 2px; }
@@ -143,13 +144,38 @@ body {
 .tab-love { background: var(--love-red); }
 .tab-secret { background: var(--deep-purple); }
 
-/* --- WRITING INTERFACE (BOOK PAGE STYLE) --- */
+/* --- MAIN INTERFACE & OVAL BACK BUTTON --- */
 .app-main { 
   max-width: 750px; 
   margin: 40px auto; 
   display: flex; 
   flex-direction: column; 
   align-items: center; 
+  position: relative;
+  z-index: 1;
+}
+
+.back-btn {
+  background: white;
+  border: 2px solid var(--book-brown);
+  color: var(--book-brown);
+  padding: 10px 30px;
+  border-radius: 50px; /* Oval shape */
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  margin-bottom: 20px;
+  box-shadow: 0 4px 0 var(--book-brown);
+}
+
+.back-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 0 var(--book-brown);
+}
+
+.back-btn:active {
+  transform: translateY(2px);
+  box-shadow: 0 0px 0 var(--book-brown);
 }
 
 .form-wrapper { 
@@ -158,44 +184,17 @@ body {
   padding: 50px; 
   border-radius: 5px 25px 25px 5px; 
   box-shadow: 0 10px 30px rgba(0,0,0,0.1); 
-  border-left: 15px solid #eae0d5; /* Page Binding Effect */
+  border-left: 15px solid #eae0d5;
   box-sizing: border-box;
 }
 
-.love-form input, .love-form textarea { 
-  width: 100%; 
-  border: none; 
-  border-bottom: 2px solid #ddd; 
-  background: transparent;
-  padding: 15px 0; 
-  margin-bottom: 20px; 
-  font-family: inherit; 
-  font-size: 1.1rem; 
-}
-
-/* --- VISIBLE BUTTON COLORS --- */
-.send-btn { 
-  display: block; 
-  margin: 20px auto 0; 
-  padding: 15px 50px; 
-  border-radius: 50px; 
-  border: none; 
-  color: white !important; /* Fixed: Force white text for contrast */
-  font-weight: bold; 
-  cursor: pointer; 
-  text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
-}
-
-.btn-broken { background: var(--broken-black) !important; }
-.btn-letter { background: var(--love-red) !important; }
-.btn-secret { background: var(--deep-purple) !important; }
-
-/* --- ENVELOPE (PAPER INSIDE EFFECT) --- */
+/* --- ENVELOPE (FIXED TEXT OVERLAP & VISIBILITY) --- */
 .envelope-wall { 
   display: grid; 
   grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); 
-  gap: 40px; 
+  gap: 60px; 
   width: 100%; 
+  margin-top: 50px;
 }
 
 .envelope { 
@@ -205,21 +204,23 @@ body {
   background: #fdf2f4; 
   cursor: pointer; 
   transition: transform 0.4s ease; 
-  margin-top: 50px; 
+  overflow: visible; /* Required for pop-out */
 }
 
 .envelope-paper { 
   position: absolute; 
-  bottom: 5px; /* Tucked inside the base */
+  top: 10px; 
   left: 5%; 
   width: 90%; 
-  height: 85%; /* Shorter when closed */
+  height: 85%; 
   background: white; 
   padding: 15px; 
-  transition: all 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275); 
-  z-index: 1; /* Behind base and flap */
+  transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1); 
+  z-index: 1; /* Paper starts behind the front base */
   border: 1px solid #eee; 
   box-sizing: border-box;
+  opacity: 0; /* Hidden initially */
+  pointer-events: none; /* Cannot click text when inside */
 }
 
 .envelope-flap { 
@@ -228,10 +229,10 @@ body {
   width: 0; height: 0; 
   border-left: 110px solid transparent; 
   border-right: 110px solid transparent; 
-  border-top: 80px solid #f8bbd0; 
-  z-index: 3; /* Top layer when closed */
+  border-top: 85px solid #f8bbd0; 
+  z-index: 4; /* Flap is on the very top when closed */
   transform-origin: top; 
-  transition: transform 0.5s ease; 
+  transition: transform 0.5s ease, z-index 0.5s; 
 }
 
 .envelope-base { 
@@ -240,41 +241,37 @@ body {
   width: 100%; 
   height: 100%; 
   background: #f48fb1; 
-  z-index: 2; /* In front of the paper */
+  z-index: 3; /* Front of envelope covers the paper */
   clip-path: polygon(0% 0%, 20% 0%, 50% 45%, 80% 0%, 100% 0%, 100% 100%, 0% 100%); 
 }
 
 .seal { 
   position: absolute; 
-  bottom: 20px; 
+  bottom: 25px; 
   left: 50%; 
   transform: translateX(-50%); 
   font-size: 1.8rem; 
-  z-index: 4; 
+  z-index: 5; 
 }
 
-/* --- OPENING EFFECT (ENHANCED Z-INDEX) --- */
+/* --- OPENING EFFECT (CLEANED) --- */
 .envelope.is-open .envelope-flap { 
   transform: rotateX(180deg); 
-  z-index: 0; /* Flaps back behind the paper */
+  z-index: 1; /* Flaps goes behind */
 }
 
 .envelope.is-open .envelope-paper { 
-  transform: translateY(-110px); /* Pop out and up */
-  height: 220px; 
-  z-index: 5; /* Paper comes to the very front */
-  box-shadow: 0 20px 40px rgba(0,0,0,0.15); 
+  transform: translateY(-120px); /* Pops higher for visibility */
+  height: 240px; 
+  z-index: 10; /* Paper pops to the absolute front */
+  opacity: 1; /* Text becomes visible */
+  pointer-events: auto; /* Text can be selected/scrolled */
+  box-shadow: 0 15px 35px rgba(0,0,0,0.2); 
 }
 
-.postage-stamp { 
-  position: absolute; 
-  top: 10px; right: 10px; 
-  width: 40px; height: 50px; 
-  background: white; 
-  border: 2px dashed #ccc; 
-  display: flex; 
-  align-items: center; 
-  justify-content: center; 
-  transform: rotate(5deg); 
-  z-index: 5; 
-}
+.letter-content { font-size: 0.85rem; color: #333; overflow-y: auto; height: 100%; padding-right: 5px; }
+.postage-stamp { position: absolute; top: 10px; right: 10px; width: 40px; height: 50px; background: white; border: 2px dashed #ccc; display: flex; align-items: center; justify-content: center; transform: rotate(5deg); z-index: 5; }
+
+/* Scrollbar styling for letter */
+.letter-content::-webkit-scrollbar { width: 4px; }
+.letter-content::-webkit-scrollbar-thumb { background: #ddd; border-radius: 10px; }
